@@ -18,7 +18,7 @@ char * readAndVerifyJson(const char * filePath) {
 	unsigned int inputJsonFileLength, i;
 	char * jsonContent, nextChar;
 	/* Sprawdz czy plik zrodlowy istnieje */
-	if (inputJsonFile == NULL) {
+	if (inputJsonFile == NULL ) {
 		fprintf(stderr, "Nie odnaleziono pliku zrodlowego.");
 		exit(1);
 	}
@@ -26,7 +26,7 @@ char * readAndVerifyJson(const char * filePath) {
 	inputJsonFileLength = getFileLength(inputJsonFile);
 
 	/* skopiuj dane z pliku*/
-	jsonContent = malloc(sizeof(char) * inputJsonFileLength);
+	jsonContent = malloc(sizeof(char) * (inputJsonFileLength + 1));
 	i = 0;
 	while (1) {
 		nextChar = getc(inputJsonFile);
@@ -41,7 +41,8 @@ char * readAndVerifyJson(const char * filePath) {
 		/* weryfikuj czy JSON jest poprawny*/
 		if (!JSON_checker_char(jc, nextChar)) {
 			fprintf(stderr,
-					"JSON_checker_char: Niepoprawna składnia pliku JSON\n");
+					"JSON_checker_char: Niepoprawna składnia pliku JSON przy znaku \"%c\"\n",
+					nextChar);
 			exit(1);
 		}
 		/* Zapisuj odczytywane dane */

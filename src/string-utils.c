@@ -33,7 +33,8 @@ char * substring(char * string, char * startingString, char * endingString) {
 		endingIndexOfStartingChar = endingIndexOf(startingString, string);
 	}
 	/* przydziel pamiec na ciag wyciety od 'startingString' do konca ciagu */
-	tmp = malloc((strlen(string) - endingIndexOfStartingChar) * sizeof(char));
+	tmp = malloc(
+			(strlen(string) - endingIndexOfStartingChar + 1) * sizeof(char));
 	/* wytnij ciag */
 	strncpy(tmp, string + endingIndexOfStartingChar,
 			strlen(string) - endingIndexOfStartingChar);
