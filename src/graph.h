@@ -30,10 +30,12 @@ struct Edge {
  * Struktura reprezentująca węzeł.
  * 		id - identyfikator węzła
  * 		edgesCount - ilość krawędzi wychodzących od węzła
+ * 		distance - dystans węzła
  * 		edges - krawędzie wychodzące od węzła
  */
 struct Node {
 	unsigned int id;
+	unsigned int distance;
 	unsigned int edgesCount;
 	struct Edge * edges;
 };
