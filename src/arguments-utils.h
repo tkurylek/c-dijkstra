@@ -29,4 +29,17 @@ void printHelp();
  */
 char * getValueForFlag(char * flag, int argc, char **argv);
 
+/**
+ * Zwraca zadeklarowany węzeł początkowy.
+ */
+int getStartNode(int argc, char **argv);
+/**
+ * Zwraca zadeklarowany węzeł końcowy.
+ */
+int getEndNode(int argc, char **argv);
+/**
+ * Zwraca zadeklarowany plik źródłowy.
+ */
+char * getInputJson(int argc, char **argv);
+
 #endif /* ARGUMENTS_UTILS_H_ */

@@ -13,18 +13,6 @@
 #include "dijkstra-utils.h"
 #include "arguments-utils.h"
 
-
-int getStartNode(int argc, char **argv) {
-	return atoi(getValueForFlag(START_NODE_FLAG, argc, argv));
-}
-
-int getEndNode(int argc, char **argv) {
-	return atoi(getValueForFlag(END_NODE_FLAG, argc, argv));
-}
-char * getInputJson(int argc, char **argv) {
-	return getValueForFlag(INPUT_JSON_FLAG, argc, argv);
-}
-
 void freeNodes(struct Node * nodes, int nodesCount) {
 	int i;
 	/* Zwolnij węzły */

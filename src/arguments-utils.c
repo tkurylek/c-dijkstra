@@ -56,3 +56,13 @@ int hasNotInputJson(int argc, char ** argv) {
 	}
 	return "\0";
 }
+/*public*/int getStartNode(int argc, char **argv) {
+	return atoi(getValueForFlag(START_NODE_FLAG, argc, argv));
+}
+
+/*public*/int getEndNode(int argc, char **argv) {
+	return atoi(getValueForFlag(END_NODE_FLAG, argc, argv));
+}
+/*public*/char * getInputJson(int argc, char **argv) {
+	return getValueForFlag(INPUT_JSON_FLAG, argc, argv);
+}
