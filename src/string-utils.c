@@ -1,10 +1,10 @@
 #include "string-utils.h"
 
-inline int contains(char * suspect, char * string) {
+/*public*/inline int contains(char * suspect, char * string) {
 	return strstr(string, suspect) != NULL ;
 }
 
-int endingIndexOf(char * suspect, char * string) {
+/*public*/int endingIndexOf(char * suspect, char * string) {
 	char * found = strstr(string, suspect);
 	if (found != NULL ) {
 		/* Zwroc pozycje suspect w string*/
@@ -13,7 +13,7 @@ int endingIndexOf(char * suspect, char * string) {
 	return -1; /* Nie znaleziono suspect w string */
 }
 
-int indexOf(char * suspect, char * string) {
+/*public*/int indexOf(char * suspect, char * string) {
 	char * found = strstr(string, suspect);
 	if (found != NULL ) {
 		/* Zwroc pozycje suspect w string*/
@@ -22,7 +22,7 @@ int indexOf(char * suspect, char * string) {
 	return -1; /* Nie znaleziono suspect w string */
 }
 
-char * substring(char * string, char * startingString, char * endingString) {
+/*public*/char * substring(char * string, char * startingString, char * endingString) {
 	char * substring = NULL, *tmp = NULL;
 	int endingIndexOfStartingChar;
 	int indexOfEndingChar;
@@ -53,7 +53,7 @@ char * substring(char * string, char * startingString, char * endingString) {
 	return substring;
 }
 
-int countSubstringOccurrences(char * suspect, char * string) {
+/*public*/int countSubstringOccurrences(char * suspect, char * string) {
 	unsigned int occurences = 0;
 	unsigned int timesMatched = 0;
 	unsigned int i, j;
@@ -75,7 +75,7 @@ int countSubstringOccurrences(char * suspect, char * string) {
 	return occurences;
 }
 
-int countCharOccurrences(char _char, char * string) {
+/*public*/int countCharOccurrences(char _char, char * string) {
 	unsigned int occurrences = 0;
 	unsigned int i;
 	for (i = 0; i < strlen(string); ++i) {
@@ -86,7 +86,7 @@ int countCharOccurrences(char _char, char * string) {
 	return occurrences;
 }
 
-char ** splitStringBySubstring(char * separator, char * string) {
+/*public*/char ** splitStringBySubstring(char * separator, char * string) {
 	char * token, *copy, *toFree, **arrayOfStrings;
 	int i, seperatorOccurences;
 	seperatorOccurences = countSubstringOccurrences(separator, string);

@@ -1,6 +1,63 @@
 #include "graph.h"
+/*public*/inline int countNodesFromJson(char * inputJson) {
+	return countSubstringOccurrences(NODES_DEFINITIONS_SEPARATOR, inputJson);
+}
+/*public*/struct Node getNode(unsigned int nodeId, struct Node * nodes, int nodesCount) {
+	int i;
+	for (i = 0; i < nodesCount; ++i) {
+		if (nodes[i].id == nodeId) {
+			return nodes[i];
+		}
+	}
+	/*Teoretycznie nie powinien tutaj dotrzeć*/
+	exit(INDETERMINABLE_NODE);
+}
+/*public*/struct NodeArrayList * newArrayList() {
+	struct NodeArrayList * newArrayList;
+	newArrayList= malloc(sizeof(struct NodeArrayList));
+	newArrayList->length = 0;
+	newArrayList->array = malloc(sizeof(struct Node));
+	return newArrayList;
+}
 
-char * getParameterFromNodeDefinition(char * parameterName, char * nodeDefinition) {
+/*public*/struct NodeArrayList * appendNodeArrayList(struct Node nodeToBeAppended,
+		struct NodeArrayList * arrayList) {
+	int i;
+	/* przydziel pamięć strukturze ArrayList*/
+	struct NodeArrayList * newArrayList = malloc(sizeof(struct NodeArrayList));
+	/* przydziel pamięć tablicy w ArrayList o jeden element większej niż poprzedniczka*/
+	newArrayList->array = malloc((arrayList->length + 1) * sizeof(struct Node));
+	/* Kopiuj wartosci */
+	for (i = 0; i < arrayList->length; ++i) {
+		newArrayList->array[i] = arrayList->array[i];
+	}
+	/* ustaw długość tablicy */
+	newArrayList->length = arrayList->length + 1;
+	/* dodaj na koniec węzeł*/
+	newArrayList->array[newArrayList->length - 1] = nodeToBeAppended;
+	/* Zwolnij starą array-listę */
+	free(arrayList->array);
+	free(arrayList);
+	return newArrayList;
+}
+
+/*public*/struct NodeArrayList * removeElementFromNodeArrayList(struct Node node,
+		struct NodeArrayList * arrayList) {
+	int i, j = 0; /* Analogicznie do 'appendNodeArrayList', komentarze zbędne*/
+	struct NodeArrayList * newArrayList = malloc(sizeof(struct NodeArrayList));
+	newArrayList->array = malloc((arrayList->length - 1) * sizeof(struct Node));
+	for (i = 0; i < arrayList->length; ++i) {
+		if (node.id != arrayList->array[i].id) { /*... ale bez usuwanego elementu*/
+			newArrayList->array[j++] = arrayList->array[i];
+		}
+	}
+	newArrayList->length = arrayList->length - 1;
+	free(arrayList->array);
+	free(arrayList);
+	return newArrayList;
+}
+
+/*public*/char * getParameterFromNodeDefinition(char * parameterName, char * nodeDefinition) {
 	char parameterPattern[20];
 	strcpy(parameterPattern, QUOTATION_MARK);
 	strcat(parameterPattern, parameterName);
@@ -9,7 +66,7 @@ char * getParameterFromNodeDefinition(char * parameterName, char * nodeDefinitio
 	return substring(nodeDefinition, parameterPattern, COMMA_WITH_QUOTATION_MARK);
 }
 
-int getNodeIdFromNodeDefinition(char * nodeDefinition) {
+/*public*/int getNodeIdFromNodeDefinition(char * nodeDefinition) {
 	int id;
 	char* tmp = getParameterFromNodeDefinition(ID_PARAM, nodeDefinition);
 	id = atoi(tmp);
@@ -17,10 +74,11 @@ int getNodeIdFromNodeDefinition(char * nodeDefinition) {
 	return id;
 }
 
-inline char ** getNodesDefinitionFromJson(char * inputJson) {
+/*public*/inline char ** getNodesDefinitionFromJson(char * inputJson) {
 	return splitStringBySubstring(NODES_DEFINITIONS_SEPARATOR, inputJson);
 }
 
+/*Zwraca mniejsza wartość z dwóch podanych*/
 inline int getLowerValueOf(int valueA, int valueB) {
 	if (valueA < valueB) {
 		return valueA;
@@ -28,7 +86,7 @@ inline int getLowerValueOf(int valueA, int valueB) {
 	}
 	return valueB;
 }
-
+/*Zwraca większą wartość z dwóch podanych*/
 inline int getHigherValueOf(int valueA, int valueB) {
 	if (valueA > valueB) {
 		return valueA;
@@ -61,20 +119,21 @@ int areAnyNonExistingEndNodeAssignment(unsigned int endNode, struct Node *nodes,
 		}
 	}
 	if (!foundEndNode) {
-		fprintf(stderr, "Błąd: Nie odnaleziono wszystkich węzłów końcowych węzła [%i]\n",
-				nodes[i].id);
+		fprintf(stderr,
+				"Błąd: Nie odnaleziono wszystkich węzłów końcowych. Brak definicji węzła [%i]\n",
+				endNode);
 		return END_NODE_UNDETERMINED;
 	}
 	return OK;
 }
 
-int areAnyPostAssignmentErrors(struct Node *nodes, int nodesCount) {
+/*public*/int areAnyPostAssignmentErrors(struct Node *nodes, int nodesCount) {
 	int i, errorCode = 0;
 	unsigned int j;
 	for (i = 0; i < nodesCount; ++i) {
 		for (j = 0; j < nodes[i].edgesCount; ++j) {
-			if (errorCode = errorCode /* operator przypisania celowo w warunku */
-					|| areAnySelfEndNodeAssignment(nodes[i].edges[j].endNode, nodes[i].id)
+			if (errorCode = errorCode /* operator przypisania _celowo_ w warunku */
+			|| areAnySelfEndNodeAssignment(nodes[i].edges[j].endNode, nodes[i].id)
 					|| areAnyNegativeDistance(nodes[i].edges[j].distance, nodes[i].id)
 					|| areAnyNonExistingEndNodeAssignment(nodes[i].edges[j].endNode, nodes,
 							nodesCount))
@@ -84,7 +143,7 @@ int areAnyPostAssignmentErrors(struct Node *nodes, int nodesCount) {
 	return OK;
 }
 
-int areAnyFormatErros(char * inputJson) {
+/*public*/int areAnyFormatErros(char * inputJson) {
 	int i;
 	struct Node * nodes = NULL;
 	char** nodesDefinitions;
@@ -98,7 +157,7 @@ int areAnyFormatErros(char * inputJson) {
 		if (getNodeIdFromNodeDefinition(nodesDefinitions[i]) == 0) {
 			fprintf(stderr, "Błąd: Nie podano 'id' dla jednego z węzłów.\n");
 			fprintf(stderr, "\tWęzeł ten został zdefiniowany jako [%i] z kolei.\n", (i + 1));
-			resultCode = NODE_INDETERMINABLE;
+			resultCode = INDETERMINABLE_NODE;
 		}
 		if (!contains(END_NODES_PARAM, nodesDefinitions[i])) {
 			fprintf(stderr, "Błąd: Węzeł zawieszony w powietrzu!\n");
@@ -112,8 +171,6 @@ int areAnyFormatErros(char * inputJson) {
 					(i + 1));
 			resultCode = FLOATING_NODE;
 		}
-	}
-	for (i = 0; i < nodesCount; ++i) {
 		free(nodesDefinitions[i]);
 	}
 	free(nodesDefinitions);
@@ -121,7 +178,7 @@ int areAnyFormatErros(char * inputJson) {
 	return resultCode;
 }
 
-struct Node * getNodesFromJson(char * inputJson) {
+/*public*/struct Node * getNodesFromJson(char * inputJson) {
 	struct Node * nodes = NULL;
 	char** nodesDefinitions;
 	int i, j;
@@ -133,20 +190,20 @@ struct Node * getNodesFromJson(char * inputJson) {
 
 	/* Przelicz definicje węzłów*/
 	nodesCount = countSubstringOccurrences(NODES_DEFINITIONS_SEPARATOR, inputJson);
-	free(nodesDefinitions[nodesCount]); /*TODO: niedoskonałość separatora*/
+	free(nodesDefinitions[nodesCount]); /*TODO: znaleźć lepszy separator*/
 
 	/* Inicjalizuj węzły zgodnie z definicjami */
 	nodes = malloc(nodesCount * sizeof(struct Node));
 	for (i = 0; i < nodesCount; ++i) {
 		nodes[i].id = getNodeIdFromNodeDefinition(nodesDefinitions[i]);
 
-		/* pobierz surowa liste wezlow koncowych i dystansow*/
+		/* pobierz surowa liste wezlow koncowych i dystansow. Jak ona wygląda? ano */
 		/* np. rawEndNodes = "2,3,4,5" */
 		rawEndNodes = getParameterFromNodeDefinition(END_NODES_PARAM, nodesDefinitions[i]);
 		rawDistances = getParameterFromNodeDefinition(DISTANCES_PARAM, nodesDefinitions[i]);
 		free(nodesDefinitions[i]);
 
-		/* rozdziel wezly koncowe i dystanse */
+		/* rozdziel wezly koncowe i dystanse. Co z tego będzie? ano  */
 		/* np. endNodes = array of {2,3,4,5}*/
 		endNodes = splitStringBySubstring(VALUES_SEPARATOR, rawEndNodes);
 		distances = splitStringBySubstring(VALUES_SEPARATOR, rawDistances);
@@ -157,9 +214,9 @@ struct Node * getNodesFromJson(char * inputJson) {
 		free(rawDistances);
 		free(rawEndNodes);
 
-		edgesCount = getLowerValueOf(endNodesCount, distancesCount);
 		/* Sprawdz czy ilosci zadeklarowanych dystansow i wezlow koncowych sie zgadzaja*/
 		/* Jeżeli nie - spróbuj wykorzystać chociaż poprawne deklaracje */
+		edgesCount = getLowerValueOf(endNodesCount, distancesCount);
 		if (endNodesCount != distancesCount) {
 			printf("Ostrzeżenie: Podano różną ilość definicji węzłów końcowych");
 			printf(" [%i] i dystansów [%i]\n", endNodesCount, distancesCount);
@@ -191,7 +248,4 @@ struct Node * getNodesFromJson(char * inputJson) {
 	}
 	free(nodesDefinitions);
 	return nodes;
-}
-int countNodesFromJson(char * inputJson) {
-	return countSubstringOccurrences(NODES_DEFINITIONS_SEPARATOR, inputJson);
 }

@@ -9,17 +9,19 @@ unsigned int getFileLength(FILE * file) {
 }
 
 inline int containsWhitespaces(char _char) {
+	/*Poniższe znaki zwiększają czytelność danych wejściowych dla człowieka
+	 * ale w programie zajmują tylko pamięć.*/
 	return _char == ' ' || _char == '\n' || _char == '\t';
 }
 
-char * readAndVerifyJson(const char * filePath) {
+/*public*/char * readAndVerifyJson(const char * filePath) {
 	FILE * inputJsonFile = fopen(filePath, "r");
 	JSON_checker jc = new_JSON_checker(20);
 	unsigned int inputJsonFileLength, i;
 	char * jsonContent, nextChar;
 	/* Sprawdz czy plik zrodlowy istnieje */
 	if (inputJsonFile == NULL ) {
-		fprintf(stderr, "Nie odnaleziono pliku zrodlowego.");
+		fprintf(stderr, "Nie odnaleziono pliku zrodlowego: [%s]", filePath);
 		exit(1);
 	}
 	/* Przejdz na koniec pliku, aby dowiedziec sie ile znakow posiada*/

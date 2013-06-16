@@ -16,6 +16,7 @@
 #define DISTANCES_PARAM "distances"
 #define VALUES_SEPARATOR ","
 #define NODES_DEFINITIONS_SEPARATOR "}"
+#define INFITITY 2147483647;
 
 enum ExitCode {
 	OK = 0 /* Poprawne zakonczenie funkcji */
@@ -23,7 +24,7 @@ enum ExitCode {
 	,NEGATIVE_DISTANCE /* zwracany podczas ustawienia ujemnegu dystansu między węzłami*/
 	,END_NODE_UNDETERMINED /* zwracany, gdy nie można odnaleźć węzła końcowego*/
 	,FLOATING_NODE /*zwracany, gdy węzeł nie posiada połączeń z innymi*/
-	,NODE_INDETERMINABLE /*zracany, gdy węzeł nie posiada indentyfikatora*/
+	,INDETERMINABLE_NODE /*zracany, gdy węzeł nie posiada indentyfikatora*/
 };
 
 /**
@@ -48,7 +49,31 @@ struct Node {
 	unsigned int edgesCount;
 	struct Edge * edges;
 };
-
+/**
+ * Lista oparta na tablicy z dynamiczną zmianą rozmiaru
+ * zamiast nudnej już listy LinkedList.
+ */
+struct NodeArrayList {
+	struct Node * array;
+	int length;
+};
+/*
+ * Tworzy nową _dynamiczną_ listę i zwraca ją.
+ */
+struct NodeArrayList * newArrayList();
+/*
+ * Usuwa podany element z listy i zwraca ją.
+ */
+struct NodeArrayList * removeElementFromNodeArrayList(struct Node node,
+		struct NodeArrayList * arrayList);
+/*
+ * Rozszerza listę o podany element i zwraca ją.
+ */
+struct NodeArrayList * appendNodeArrayList(struct Node node, struct NodeArrayList * arrayList);
+/**
+ *	Wyszukuje i zwraca węzeł o podanym id z podanej tablicy.
+ */
+struct Node getNode(unsigned int nodeId, struct Node * nodes, int nodesCount);
 /**
  * Weryfikuje, czy podane źródło 'inputJson' jest poprawnym źródłem
  * definicji węzłów. Zwracany jest kod błędu różny od zera w przypadku
@@ -66,7 +91,9 @@ int areAnyFormatErros(char * inputJson);
  */
 int areAnyPostAssignmentErrors(struct Node *nodes, int nodesCount);
 /**
- * Zwraca definicje wszystkich węzłów przechowywanych w 'inputJson'.
+ * Zwraca definicje wszystkich węzłów przechowywanych w 'inputJson'
+ * Definicja węzła to ciąg znaków zawierający wszystkie informacje
+ * o węźle.
  */
 inline char ** getNodesDefinitionFromJson(char * inputJson);
 /**

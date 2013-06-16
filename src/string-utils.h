@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 /**
  * Sprawdza czy 'suspect' znajduje sie w 'string'. Podobnie jak
  * strstr, ale o wiele czytelniej.
@@ -33,7 +32,10 @@ int endingIndexOf(char * suspect, char * string);
  */
 int indexOf(char * suspect, char * string);
 /**
- * Zwraca podciag ciagu 'string' od znaku 'startingString' do 'endingString'.
+ * Zwraca podciag ciagu 'string' od ciągu 'startingString' do ciągu 'endingString'.
+ * Jeżeli podciąg 'startingString' nie znajduje się w ciągu, cięcie rozpocznie się od
+ * początku ciągu. Natomiast jeżeli 'endingString' nie znajduje się w ciągu, cięcie
+ * zakończy się wraz z końcem ciągu głównego.
  *
  * UWAGA: Zwracany podciag jest dynamicznie przydzielony i powinien zostac zwolniony!
  *
