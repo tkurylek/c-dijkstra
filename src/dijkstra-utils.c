@@ -21,9 +21,11 @@
 /*public*/void printTrail(int startNodeId, int endNodeId, int * trail) {
 	int i;
 	i = endNodeId;
+	puts("Najkrótsza scieżka:");
 	printf("(%i)", i);
 	while (i != startNodeId) {
 		printf("<--(%i)", trail[i]);
 		i = trail[i];
 	}
+	puts("");
 }

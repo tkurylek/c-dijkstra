@@ -21,7 +21,7 @@ inline int containsWhitespaces(char _char) {
 	char * jsonContent, nextChar;
 	/* Sprawdz czy plik zrodlowy istnieje */
 	if (inputJsonFile == NULL ) {
-		fprintf(stderr, "Nie odnaleziono pliku zrodlowego: [%s]", filePath);
+		fprintf(stderr, "Nie odnaleziono pliku zrodlowego: [%s]\n", filePath);
 		exit(1);
 	}
 	/* Przejdz na koniec pliku, aby dowiedziec sie ile znakow posiada*/

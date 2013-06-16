@@ -5,6 +5,7 @@
 #define GRAPH_H_
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "string-utils.h"
 
 /* stałe */
@@ -70,6 +71,10 @@ struct NodeArrayList * removeElementFromNodeArrayList(struct Node node,
  * Rozszerza listę o podany element i zwraca ją.
  */
 struct NodeArrayList * appendNodeArrayList(struct Node node, struct NodeArrayList * arrayList);
+/**
+ * Sprawdza czy węzeł o podanym id znajduje sie w podanej tablicy.
+ */
+int containsNode(unsigned int nodeId, struct Node * nodes, int nodesCount);
 /**
  *	Wyszukuje i zwraca węzeł o podanym id z podanej tablicy.
  */

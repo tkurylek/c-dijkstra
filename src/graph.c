@@ -2,26 +2,35 @@
 /*public*/inline int countNodesFromJson(char * inputJson) {
 	return countSubstringOccurrences(NODES_DEFINITIONS_SEPARATOR, inputJson);
 }
+/*public*/int containsNode(unsigned int nodeId, struct Node * nodes, int nodesCount) {
+	int i;
+	for (i = 0; i < nodesCount; ++i) {
+		if (nodes[i].id == nodeId) {
+			return 1;
+		}
+	}
+	return 0;
+}
 /*public*/struct Node getNode(unsigned int nodeId, struct Node * nodes, int nodesCount) {
 	int i;
+	assert(containsNode(nodeId, nodes, nodesCount));
 	for (i = 0; i < nodesCount; ++i) {
 		if (nodes[i].id == nodeId) {
 			return nodes[i];
 		}
 	}
-	/*Teoretycznie nie powinien tutaj dotrzeć*/
+	/*Teoretycznie nigdy nie powinien tutaj dotrzeć*/
 	exit(INDETERMINABLE_NODE);
 }
 /*public*/struct NodeArrayList * newArrayList() {
 	struct NodeArrayList * newArrayList;
-	newArrayList= malloc(sizeof(struct NodeArrayList));
+	newArrayList = malloc(sizeof(struct NodeArrayList));
 	newArrayList->length = 0;
 	newArrayList->array = malloc(sizeof(struct Node));
 	return newArrayList;
 }
 
-/*public*/struct NodeArrayList * appendNodeArrayList(struct Node nodeToBeAppended,
-		struct NodeArrayList * arrayList) {
+/*public*/struct NodeArrayList * appendNodeArrayList(struct Node nodeToBeAppended, struct NodeArrayList * arrayList) {
 	int i;
 	/* przydziel pamięć strukturze ArrayList*/
 	struct NodeArrayList * newArrayList = malloc(sizeof(struct NodeArrayList));
@@ -41,8 +50,7 @@
 	return newArrayList;
 }
 
-/*public*/struct NodeArrayList * removeElementFromNodeArrayList(struct Node node,
-		struct NodeArrayList * arrayList) {
+/*public*/struct NodeArrayList * removeElementFromNodeArrayList(struct Node node, struct NodeArrayList * arrayList) {
 	int i, j = 0; /* Analogicznie do 'appendNodeArrayList', komentarze zbędne*/
 	struct NodeArrayList * newArrayList = malloc(sizeof(struct NodeArrayList));
 	newArrayList->array = malloc((arrayList->length - 1) * sizeof(struct Node));
@@ -119,9 +127,7 @@ int areAnyNonExistingEndNodeAssignment(unsigned int endNode, struct Node *nodes,
 		}
 	}
 	if (!foundEndNode) {
-		fprintf(stderr,
-				"Błąd: Nie odnaleziono wszystkich węzłów końcowych. Brak definicji węzła [%i]\n",
-				endNode);
+		fprintf(stderr, "Błąd: Nie odnaleziono wszystkich węzłów końcowych. Brak definicji węzła [%i]\n", endNode);
 		return END_NODE_UNDETERMINED;
 	}
 	return OK;
@@ -135,8 +141,7 @@ int areAnyNonExistingEndNodeAssignment(unsigned int endNode, struct Node *nodes,
 			if (errorCode = errorCode /* operator przypisania _celowo_ w warunku */
 			|| areAnySelfEndNodeAssignment(nodes[i].edges[j].endNode, nodes[i].id)
 					|| areAnyNegativeDistance(nodes[i].edges[j].distance, nodes[i].id)
-					|| areAnyNonExistingEndNodeAssignment(nodes[i].edges[j].endNode, nodes,
-							nodesCount))
+					|| areAnyNonExistingEndNodeAssignment(nodes[i].edges[j].endNode, nodes, nodesCount))
 				return errorCode;
 		}
 	}
@@ -161,14 +166,12 @@ int areAnyNonExistingEndNodeAssignment(unsigned int endNode, struct Node *nodes,
 		}
 		if (!contains(END_NODES_PARAM, nodesDefinitions[i])) {
 			fprintf(stderr, "Błąd: Węzeł zawieszony w powietrzu!\n");
-			fprintf(stderr, "\tBrak węzłów końcowych dla węzła zdefiniowanego jako [%i] z kolei.\n",
-					(i + 1));
+			fprintf(stderr, "\tBrak węzłów końcowych dla węzła zdefiniowanego jako [%i] z kolei.\n", (i + 1));
 			resultCode = FLOATING_NODE;
 		}
 		if (!contains(END_NODES_PARAM, nodesDefinitions[i])) {
 			fprintf(stderr, "Błąd: Węzeł zawieszony w powietrzu!\n");
-			fprintf(stderr, "\tBrak dystansów między węzłem zdefiniowanym jako [%i] z kolei.\n",
-					(i + 1));
+			fprintf(stderr, "\tBrak dystansów między węzłem zdefiniowanym jako [%i] z kolei.\n", (i + 1));
 			resultCode = FLOATING_NODE;
 		}
 		free(nodesDefinitions[i]);
@@ -220,8 +223,7 @@ int areAnyNonExistingEndNodeAssignment(unsigned int endNode, struct Node *nodes,
 		if (endNodesCount != distancesCount) {
 			printf("Ostrzeżenie: Podano różną ilość definicji węzłów końcowych");
 			printf(" [%i] i dystansów [%i]\n", endNodesCount, distancesCount);
-			printf("\tw węźle o id [%i]. Za ilość węzłów przyjęta zostanie wartość [%i].\n",
-					nodes[i].id, edgesCount);
+			printf("\tw węźle o id [%i]. Za ilość węzłów przyjęta zostanie wartość [%i].\n", nodes[i].id, edgesCount);
 			printf("\tCzęść danych wejściowych zostanie pominięta:\n");
 			/* Zwolnij pamięć pominiętych danych */
 			for (j = edgesCount; j < distancesCount; ++j) {

@@ -11,18 +11,45 @@
 #include "JSON-reader.h"
 #include "graph.h"
 #include "dijkstra-utils.h"
+#include "arguments-utils.h"
+
+
+int getStartNode(int argc, char **argv) {
+	return atoi(getValueForFlag(START_NODE_FLAG, argc, argv));
+}
+
+int getEndNode(int argc, char **argv) {
+	return atoi(getValueForFlag(END_NODE_FLAG, argc, argv));
+}
+char * getInputJson(int argc, char **argv) {
+	return getValueForFlag(INPUT_JSON_FLAG, argc, argv);
+}
+
+void freeNodes(struct Node * nodes, int nodesCount) {
+	int i;
+	/* Zwolnij węzły */
+	for (i = 0; i < nodesCount; ++i) {
+		free(nodes[i].edges);
+	}
+	free(nodes);
+}
 
 int main(int argc, char **argv) {
 	struct Node * nodes = NULL;
-	struct Node startNode;
 	struct NodeArrayList * unvisitedNodes;
-	struct Node evaluationNode;
-	struct Node endNode;
-	int nodesCount, i = 0, j, totalDistanceToEndNode, *trail, appended;
+	struct Node startNode, endNode, evaluationNode;
+	int nodesCount, i = 0, totalDistanceToEndNode, *trail, appended;
 	char * inputJson;
 	int startNodeId = 1, endNodeId = 3;
+
+	if (areAnyUndefinedArguments(argc, argv)) {
+		puts("Nie podano poprawnych parametrów. Zapoznaj się z pomocą:");
+		printHelp();
+		return 1;
+	}
+
 	/* Zweryfikuj i pobierz JSON*/
-	inputJson = readAndVerifyJson("/home/tomek/Pulpit/data.js");
+	inputJson = readAndVerifyJson(getInputJson(argc, argv));
 
 	/* Pobierz ilość węzłów */
 	nodesCount = countNodesFromJson(inputJson);
@@ -31,6 +58,24 @@ int main(int argc, char **argv) {
 	if (!areAnyFormatErros(inputJson)) {
 		/* Pobierz węzły */
 		nodes = getNodesFromJson(inputJson);
+
+		/* sprawdz czy startNode istnieje w pliku wejsciowym */
+		startNodeId = getStartNode(argc, argv);
+		if (!containsNode(startNodeId, nodes, nodesCount)) {
+			fprintf(stderr, "Podany węzeł początkowy [%i] nie jest zadeklarowany w pliku wejściowym\n", startNodeId);
+			freeNodes(nodes, nodesCount);
+			free(inputJson);
+			exit(1);
+		}
+
+		/* sprawdz czy endNode istnieje w pliku wejsciowym */
+		endNodeId = getEndNode(argc, argv);
+		if (!containsNode(endNodeId, nodes, nodesCount)) {
+			fprintf(stderr, "Podany węzeł końcowy [%i] nie jest zadeklarowany w pliku wejściowym\n", endNodeId);
+			freeNodes(nodes, nodesCount);
+			free(inputJson);
+			exit(1);
+		}
 
 		/* Sprawdź czy węzły zostały prawidłowo ustawione */
 		if (!areAnyPostAssignmentErrors(nodes, nodesCount)) {
@@ -58,9 +103,9 @@ int main(int argc, char **argv) {
 				}
 				unvisitedNodes = removeElementFromNodeArrayList(evaluationNode, unvisitedNodes);
 				/* analizuj krawędzie węzła*/
-				for (j = 0; j < evaluationNode.edgesCount; ++j) {
-					totalDistanceToEndNode = evaluationNode.distance + evaluationNode.edges[j].distance;
-					endNode = getNode(evaluationNode.edges[j].endNode, nodes, nodesCount);
+				for (i = 0; i < evaluationNode.edgesCount; ++i) {
+					totalDistanceToEndNode = evaluationNode.distance + evaluationNode.edges[i].distance;
+					endNode = getNode(evaluationNode.edges[i].endNode, nodes, nodesCount);
 					if (endNode.distance > totalDistanceToEndNode) {
 						endNode.distance = totalDistanceToEndNode;
 						trail[endNode.id] = evaluationNode.id; /* zapisz ślad*/
@@ -69,17 +114,15 @@ int main(int argc, char **argv) {
 					}
 				}
 			} while (appended);
+
 			/* Zwolnij arary-listę */
 			free(unvisitedNodes->array);
 			free(unvisitedNodes);
+			/* Zwolnij ślad */
+			free(trail);
 		}
-		/* Zwolnij ślad */
-		free(trail);
 		/* Zwolnij węzły */
-		for (i = 0; i < nodesCount; ++i) {
-			free(nodes[i].edges);
-		}
-		free(nodes);
+		freeNodes(nodes, nodesCount);
 	}
 	/* Zwolnij JSON wejściowy*/
 	free(inputJson);
