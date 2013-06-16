@@ -48,9 +48,13 @@ char * substring(char * string, char * startingString, char * endingString);
  */
 int countCharOccurrences(char _char, char * string);
 /**
+ * Zwraca liczbę wystąpień podciągu 'suspect' w ciągu 'string'.
+ */
+int countSubstringOccurrences(char * suspect, char * string);
+/**
  * Rozdziela ciąg 'string' na tablicę po separatorze 'separator'.
  * UWAGA: Zwracany tablica jest dynamicznie przydzielona i powinna zostac zwolniona!
  */
-char ** splitString(char * separator, char * string);
+char ** splitStringBySubstring(char * separator, char * string);
 
 #endif /* STRING_UTILS_H_ */

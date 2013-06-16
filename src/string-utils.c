@@ -53,8 +53,30 @@ char * substring(char * string, char * startingString, char * endingString) {
 	return substring;
 }
 
+int countSubstringOccurrences(char * suspect, char * string) {
+	unsigned int occurences = 0;
+	unsigned int timesMatched = 0;
+	unsigned int i, j;
+	for (i = 0; i < strlen(string); ++i) {
+		for (j = 0; j < strlen(suspect); ++j) {
+			if(suspect[j] == string[i]) {
+				timesMatched++;
+				i++;
+			} else {
+				timesMatched = 0;
+			}
+			if(timesMatched >= strlen(suspect)) {
+				occurences++;
+				timesMatched = 0;
+				break;
+			}
+		}
+	}
+	return occurences;
+}
+
 int countCharOccurrences(char _char, char * string) {
-	int occurrences = 0;
+	unsigned int occurrences = 0;
 	unsigned int i;
 	for (i = 0; i < strlen(string); ++i) {
 		if (string[i] == _char) {
@@ -64,15 +86,15 @@ int countCharOccurrences(char _char, char * string) {
 	return occurrences;
 }
 
-char ** splitString(char * separator, char * string) {
+char ** splitStringBySubstring(char * separator, char * string) {
 	char * token, *copy, *toFree, **arrayOfStrings;
 	int i, seperatorOccurences;
-	seperatorOccurences = countCharOccurrences(separator[0], string);
+	seperatorOccurences = countSubstringOccurrences(separator, string);
 	/* Rezerwuj pamiec dla tablicy powstalej po podzieleniu ciagu*/
-	arrayOfStrings = malloc(seperatorOccurences * sizeof(char*));
-	for (i = 0; i < seperatorOccurences; ++i) {
+	arrayOfStrings = malloc((seperatorOccurences+1)* sizeof(char*));
+	for (i = 0; i < seperatorOccurences+1; ++i) {
 		/* Zakladamu tutaj najgorszy scenariusz, czyli  tablica jednoelementowa z calym ciagiem w pierwszym elemencie*/
-		arrayOfStrings[i] = malloc(strlen(string) * sizeof(char));
+		arrayOfStrings[i] = malloc((strlen(string)+1) * sizeof(char));
 	}
 	i = 0;
 	copy = strdup(string);
