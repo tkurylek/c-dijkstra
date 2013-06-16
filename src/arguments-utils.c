@@ -3,7 +3,6 @@
 /*public*/int hasNotExpectedArgumentsNumber(int argc) {
 	return argc - 1 != EXPECTED_ARGUMENT_COUNT;
 }
-
 int hasNotStartNode(int argc, char ** argv) {
 	int i;
 	for (i = 1; i < argc; ++i) {

@@ -3,8 +3,7 @@
 /*public*/void setInfinityDistanceForEachNode(struct Node * nodes, int nodesCount) {
 	int i;
 	for (i = 0; i < nodesCount; ++i) {
-		nodes[i].distance = INFITITY
-		;
+		nodes[i].distance = INFITITY;
 	}
 }
 /*public*/struct Node findElementWithTheLowestDistanceInNodeArrayList(struct NodeArrayList * arrayList) {

@@ -26,7 +26,8 @@ int main(int argc, char **argv) {
 	struct Node * nodes = NULL;
 	struct NodeArrayList * unvisitedNodes;
 	struct Node startNode, endNode, evaluationNode;
-	int nodesCount, i = 0, totalDistanceToEndNode, *trail, appended;
+	int nodesCount, i = 0, *trail;
+	unsigned int totalDistanceToEndNode;
 	char * inputJson;
 	int startNodeId = 1, endNodeId = 3;
 
@@ -79,8 +80,8 @@ int main(int argc, char **argv) {
 
 			/* dodaj węzeł początkowy do analizy - od niego zaczniemy*/
 			unvisitedNodes = appendNodeArrayList(startNode, unvisitedNodes);
-			do {
-				appended = 0; /*załóż, że lista się nie rozszerzy - dalsza analiza nie będzie konieczna */
+
+			while (unvisitedNodes->length > 0) {
 				evaluationNode = findElementWithTheLowestDistanceInNodeArrayList(unvisitedNodes);
 				/* sprawdź czy to już koniec grafu */
 				if (evaluationNode.id == endNodeId) {
@@ -93,15 +94,20 @@ int main(int argc, char **argv) {
 				/* analizuj krawędzie węzła*/
 				for (i = 0; i < evaluationNode.edgesCount; ++i) {
 					totalDistanceToEndNode = evaluationNode.distance + evaluationNode.edges[i].distance;
-					endNode = getNode(evaluationNode.edges[i].endNode, nodes, nodesCount);
+
+					/* Pobierz węzeł końcowy z unvisited lub glownej listy */
+					if (containsNode(evaluationNode.edges[i].endNode, unvisitedNodes->array, unvisitedNodes->length)) {
+						endNode = getNode(evaluationNode.edges[i].endNode, unvisitedNodes->array, unvisitedNodes->length);
+					} else {
+						endNode = getNode(evaluationNode.edges[i].endNode, nodes, nodesCount); /* pobierz z głównej listy*/
+					}
 					if (endNode.distance > totalDistanceToEndNode) {
 						endNode.distance = totalDistanceToEndNode;
 						trail[endNode.id] = evaluationNode.id; /* zapisz ślad*/
 						unvisitedNodes = appendNodeArrayList(endNode, unvisitedNodes);
-						appended = 1; /*lista została rozszerzona, konieczna będzie kolejna analiza*/
 					}
 				}
-			} while (appended);
+			}
 
 			/* Zwolnij arary-listę */
 			free(unvisitedNodes->array);
