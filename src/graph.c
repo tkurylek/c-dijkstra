@@ -2,7 +2,6 @@
 
 char * getParameterFromNodeDefinition(char * parameterName, char * nodeDefinition) {
 	char parameterPattern[20];
-	/* Tworzy ciag "\""+parameterName+"\":" */
 	strcpy(parameterPattern, QUOTATION_MARK);
 	strcat(parameterPattern, parameterName);
 	strcat(parameterPattern, QUOTATION_MARK);
@@ -14,10 +13,6 @@ int getNodeIdFromNodeDefinition(char * nodeDefinition) {
 	int id;
 	char* tmp = getParameterFromNodeDefinition(ID_PARAM, nodeDefinition);
 	id = atoi(tmp);
-	if (id == 0) {
-		fprintf(stderr, "Błąd: Nie podano 'id' dla jednego z węzłów.\n");
-		exit(1);
-	}
 	free(tmp);
 	return id;
 }
@@ -42,42 +37,88 @@ inline int getHigherValueOf(int valueA, int valueB) {
 	return valueB;
 }
 
-void preventSelfEndNodeAssignment(int endNode, int rootNodeId) {
+int areAnySelfEndNodeAssignment(int endNode, int rootNodeId) {
 	if (endNode == rootNodeId) {
 		fprintf(stderr, "Błąd: Węzeł [%i] połączony z samym sobą!\n", rootNodeId);
-		exit(1);
+		return SELF_END_NODE_ASSIGNMENT_ERROR;
 	}
+	return OK;
 }
 
-void preventNegativeDistance(int distance, int rootNodeId) {
-	if (distance <= 0) {
+int areAnyNegativeDistance(int distance, int rootNodeId) {
+	if (distance < 0) {
 		fprintf(stderr, "Błąd: Węzeł [%i] posiada błędny dystans [%i]!\n", rootNodeId, distance);
-		exit(1);
+		return NEGATIVE_DISTANCE;
 	}
+	return OK;
 }
-
-void preventNonExistingEndNodeAssignment(struct Node *nodes, int nodesCount) {
-	int i, x;
-	unsigned int j;
-	int foundEndNodes = 0;
-	int declaredEndNodes = 0;
+int areAnyNonExistingEndNodeAssignment(unsigned int endNode, struct Node *nodes, int nodesCount) {
+	int foundEndNode = 0, i;
 	for (i = 0; i < nodesCount; ++i) {
-		for (j = 0; j < nodes[i].edgesCount; ++j) {
-			for (x = 0; x < nodesCount; ++x) {
-				if (nodes[i].edges[j].endNode == nodes[x].id) {
-					foundEndNodes++;
-					break;
-				}
-			}
-			declaredEndNodes++;
+		if (endNode == nodes[i].id) {
+			foundEndNode = 1;
+			break;
 		}
 	}
-	if (foundEndNodes != declaredEndNodes) {
-		fprintf(stderr,
-				"Błąd: Błędne definicje węzłów końcowych. Znaleziono zaledwie %i węzłów z deklarowanych %i.\n",
-				foundEndNodes, declaredEndNodes);
-		exit(1);
+	if (!foundEndNode) {
+		fprintf(stderr, "Błąd: Nie odnaleziono wszystkich węzłów końcowych węzła [%i]\n",
+				nodes[i].id);
+		return END_NODE_UNDETERMINED;
 	}
+	return OK;
+}
+
+int areAnyPostAssignmentErrors(struct Node *nodes, int nodesCount) {
+	int i, errorCode = 0;
+	unsigned int j;
+	for (i = 0; i < nodesCount; ++i) {
+		for (j = 0; j < nodes[i].edgesCount; ++j) {
+			if (errorCode = errorCode /* operator przypisania celowo w warunku */
+					|| areAnySelfEndNodeAssignment(nodes[i].edges[j].endNode, nodes[i].id)
+					|| areAnyNegativeDistance(nodes[i].edges[j].distance, nodes[i].id)
+					|| areAnyNonExistingEndNodeAssignment(nodes[i].edges[j].endNode, nodes,
+							nodesCount))
+				return errorCode;
+		}
+	}
+	return OK;
+}
+
+int areAnyFormatErros(char * inputJson) {
+	int i;
+	struct Node * nodes = NULL;
+	char** nodesDefinitions;
+	int nodesCount;
+	int resultCode = OK; /* Zakladamy, że nie było błedu*/
+	nodesDefinitions = getNodesDefinitionFromJson(inputJson);
+	nodesCount = countSubstringOccurrences(NODES_DEFINITIONS_SEPARATOR, inputJson);
+	free(nodesDefinitions[nodesCount]); /* wynika z niedoskonałości speratora*/
+	nodes = malloc(nodesCount * sizeof(struct Node));
+	for (i = 0; i < nodesCount; ++i) {
+		if (getNodeIdFromNodeDefinition(nodesDefinitions[i]) == 0) {
+			fprintf(stderr, "Błąd: Nie podano 'id' dla jednego z węzłów.\n");
+			fprintf(stderr, "\tWęzeł ten został zdefiniowany jako [%i] z kolei.\n", (i + 1));
+			resultCode = NODE_INDETERMINABLE;
+		}
+		if (!contains(END_NODES_PARAM, nodesDefinitions[i])) {
+			fprintf(stderr, "Błąd: Węzeł zawieszony w powietrzu!\n");
+			fprintf(stderr, "\tBrak węzłów końcowych dla węzła zdefiniowanego jako [%i] z kolei.\n",
+					(i + 1));
+			resultCode = FLOATING_NODE;
+		}
+		if (!contains(END_NODES_PARAM, nodesDefinitions[i])) {
+			fprintf(stderr, "Błąd: Węzeł zawieszony w powietrzu!\n");
+			fprintf(stderr, "\tBrak dystansów między węzłem zdefiniowanym jako [%i] z kolei.\n",
+					(i + 1));
+			resultCode = FLOATING_NODE;
+		}
+	}
+	for (i = 0; i < nodesCount; ++i) {
+		free(nodesDefinitions[i]);
+	}
+	free(nodesDefinitions);
+	free(nodes);
+	return resultCode;
 }
 
 struct Node * getNodesFromJson(char * inputJson) {
@@ -101,17 +142,7 @@ struct Node * getNodesFromJson(char * inputJson) {
 
 		/* pobierz surowa liste wezlow koncowych i dystansow*/
 		/* np. rawEndNodes = "2,3,4,5" */
-		if (!contains(END_NODES_PARAM, nodesDefinitions[i])) {
-			fprintf(stderr, "Błąd: Węzeł zawieszony w powietrzu!\n");
-			fprintf(stderr, "\tBrak węzłów końcowych dla węzła o id [%i]\n", nodes[i].id);
-			exit(1);
-		}
 		rawEndNodes = getParameterFromNodeDefinition(END_NODES_PARAM, nodesDefinitions[i]);
-		if (!contains(DISTANCES_PARAM, nodesDefinitions[i])) {
-			fprintf(stderr, "Błąd: Węzeł zawieszony w powietrzu!\n");
-			fprintf(stderr, "\tBrak dystansów między węzłem o id [%i]\n", nodes[i].id);
-			exit(1);
-		}
 		rawDistances = getParameterFromNodeDefinition(DISTANCES_PARAM, nodesDefinitions[i]);
 		free(nodesDefinitions[i]);
 
@@ -128,19 +159,20 @@ struct Node * getNodesFromJson(char * inputJson) {
 
 		edgesCount = getLowerValueOf(endNodesCount, distancesCount);
 		/* Sprawdz czy ilosci zadeklarowanych dystansow i wezlow koncowych sie zgadzaja*/
+		/* Jeżeli nie - spróbuj wykorzystać chociaż poprawne deklaracje */
 		if (endNodesCount != distancesCount) {
-			printf("Ostrzeżenie: Podano różna ilość definicji węzłów końcowych");
+			printf("Ostrzeżenie: Podano różną ilość definicji węzłów końcowych");
 			printf(" [%i] i dystansów [%i]\n", endNodesCount, distancesCount);
-			printf("\tW węźle o id [%i]. Za ilość węzłów przyjęta zostanie wartość [%i].\n",
+			printf("\tw węźle o id [%i]. Za ilość węzłów przyjęta zostanie wartość [%i].\n",
 					nodes[i].id, edgesCount);
-			printf("\tCzęść danych wejściowych zostanie pominięta!\n");
+			printf("\tCzęść danych wejściowych zostanie pominięta:\n");
 			/* Zwolnij pamięć pominiętych danych */
 			for (j = edgesCount; j < distancesCount; ++j) {
-				puts("\t\tPomijam dystans bez zadeklarowanego węzła końcowego!");
+				puts("\t\tPomijam dystans bez zadeklarowanego węzła końcowego...");
 				free(distances[j]);
 			}
 			for (j = edgesCount; j < endNodesCount; ++j) {
-				puts("\t\tPomijam wezęł końcowy bez zadekarowanego dystansu!");
+				puts("\t\tPomijam wezęł końcowy bez zadekarowanego dystansu...");
 				free(endNodes[j]);
 			}
 		}
@@ -151,17 +183,12 @@ struct Node * getNodesFromJson(char * inputJson) {
 		for (j = 0; j < edgesCount; ++j) {
 			nodes[i].edges[j].endNode = atoi(endNodes[j]);
 			nodes[i].edges[j].distance = atoi(distances[j]);
-			preventSelfEndNodeAssignment(nodes[i].edges[j].endNode, nodes[i].id);
-			preventNegativeDistance(nodes[i].edges[j].distance, nodes[i].id);
 			free(endNodes[j]);
 			free(distances[j]);
 		}
-
 		free(endNodes);
 		free(distances);
 	}
-	/* Sprawdź czy wszyskie węzły końcowe wskazują na istnejące węzły*/
-	preventNonExistingEndNodeAssignment(nodes, nodesCount);
 	free(nodesDefinitions);
 	return nodes;
 }

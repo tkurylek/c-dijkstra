@@ -43,6 +43,8 @@ char * readAndVerifyJson(const char * filePath) {
 			fprintf(stderr,
 					"JSON_checker_char: Niepoprawna składnia pliku JSON przy znaku \"%c\"\n",
 					nextChar);
+			free(jsonContent);
+			fclose(inputJsonFile);
 			exit(1);
 		}
 		/* Zapisuj odczytywane dane */
@@ -55,6 +57,8 @@ char * readAndVerifyJson(const char * filePath) {
 	jsonContent[i++] = '\0';
 	if (!JSON_checker_done(jc)) {
 		fprintf(stderr, "JSON_checker_end: Niepoprawna składnia pliku JSON\n");
+		free(jsonContent);
+		fclose(inputJsonFile);
 		exit(1);
 	}
 	return jsonContent;
