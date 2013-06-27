@@ -90,7 +90,6 @@
 inline int getLowerValueOf(int valueA, int valueB) {
 	if (valueA < valueB) {
 		return valueA;
-	} else if (valueA > valueB) {
 	}
 	return valueB;
 }
@@ -98,7 +97,6 @@ inline int getLowerValueOf(int valueA, int valueB) {
 inline int getHigherValueOf(int valueA, int valueB) {
 	if (valueA > valueB) {
 		return valueA;
-	} else if (valueA < valueB) {
 	}
 	return valueB;
 }
